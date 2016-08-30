@@ -23,6 +23,7 @@ spec:
         - --master={{ index .APIServers 0 }}
         - --kubeconfig=/etc/kubernetes/kubeconfig
         - --proxy-mode=iptables
+        - --masquerade-all=true #NOTE(aaron): this is necessary for vagrant when eth0 IP is not routable
         securityContext:
           privileged: true
         volumeMounts:
