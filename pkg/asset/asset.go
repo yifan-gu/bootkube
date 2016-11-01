@@ -28,10 +28,12 @@ const (
 	AssetPathAPIServerSecret         = "manifests/kube-apiserver-secret.yaml"
 	AssetPathAPIServer               = "manifests/kube-apiserver.yaml"
 	AssetPathControllerManager       = "manifests/kube-controller-manager.yaml"
+	AssetPathEtcdOperator            = "manifests/etcd-operator.yaml"
 	AssetPathControllerManagerSecret = "manifests/kube-controller-manager-secret.yaml"
 	AssetPathScheduler               = "manifests/kube-scheduler.yaml"
 	AssetPathKubeDNSDeployment       = "manifests/kube-dns-deployment.yaml"
 	AssetPathKubeDNSSvc              = "manifests/kube-dns-svc.yaml"
+	AssetPathEtcdSvc                 = "manifests/etcd-service.yaml"
 	AssetPathSystemNamespace         = "manifests/kube-system-ns.yaml"
 )
 

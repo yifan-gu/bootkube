@@ -27,6 +27,7 @@ var requiredPods = []string{
 	"kube-apiserver",
 	"kube-scheduler",
 	"kube-controller-manager",
+	"etcd-operator",
 }
 
 type Config struct {
@@ -54,6 +55,7 @@ func NewBootkube(config Config) (*bootkube, error) {
 		"--tls-cert-file=" + filepath.Join(config.AssetDir, asset.AssetPathAPIServerCert),
 		"--client-ca-file=" + filepath.Join(config.AssetDir, asset.AssetPathCACert),
 		"--etcd-servers=" + config.EtcdServer.String(),
+		"--storage-backend=etcd3",
 		"--service-cluster-ip-range=10.3.0.0/24",
 		"--service-account-key-file=" + filepath.Join(config.AssetDir, asset.AssetPathServiceAccountPubKey),
 		"--admission-control=NamespaceLifecycle,ServiceAccount",
@@ -105,6 +107,7 @@ func (b *bootkube) Run() error {
 	if err != nil {
 		UserOutput("Error: %v\n", err)
 	}
+
 	return err
 }
 

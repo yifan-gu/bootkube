@@ -139,7 +139,8 @@ spec:
         - --secure-port=443
         - --insecure-port=8080
         - --advertise-address=$(MY_POD_IP)
-        - --etcd-servers={{ range $i, $e := .EtcdServers }}{{ if $i }},{{end}}{{ $e }}{{end}}
+        - --etcd-servers=http://10.3.0.20:2379
+        - --storage-backend=etcd3
         - --allow-privileged=true
         - --service-cluster-ip-range=10.3.0.0/24
         - --admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,ResourceQuota
@@ -208,6 +209,29 @@ spec:
       - name: ssl-host
         hostPath:
           path: /usr/share/ca-certificates
+`)
+	EtcdOperatorTemplate = []byte(`apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: etcd-operator
+  namespace: kube-system
+  labels:
+    k8s-app: etcd-operator
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        k8s-app: etcd-operator
+    spec:
+      containers:
+      - name: etcd-operator
+        image: gcr.io/coreos-k8s-scale-testing/etcd-operator
+        env:
+        - name: MY_POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
 `)
 	SchedulerTemplate = []byte(`apiVersion: extensions/v1beta1
 kind: Deployment
@@ -398,6 +422,21 @@ spec:
     protocol: UDP
   - name: dns-tcp
     port: 53
+    protocol: TCP
+`)
+	EtcdSvcTemplate = []byte(`apiVersion: v1
+kind: Service
+metadata:
+  name: etcd-service
+  namespace: kube-system
+spec:
+  selector:
+    app: etcd
+    etcd_cluster: etcd-cluster
+  clusterIP: 10.3.0.20
+  ports:
+  - name: client
+    port: 2379
     protocol: TCP
 `)
 )

@@ -20,11 +20,13 @@ const (
 func newStaticAssets(selfHostKubelet bool) Assets {
 	var noData interface{}
 	assets := Assets{
+		mustCreateAssetFromTemplate(AssetPathEtcdOperator, internal.EtcdOperatorTemplate, noData),
 		mustCreateAssetFromTemplate(AssetPathControllerManager, internal.ControllerManagerTemplate, noData),
 		mustCreateAssetFromTemplate(AssetPathScheduler, internal.SchedulerTemplate, noData),
 		mustCreateAssetFromTemplate(AssetPathProxy, internal.ProxyTemplate, noData),
 		mustCreateAssetFromTemplate(AssetPathKubeDNSDeployment, internal.DNSDeploymentTemplate, noData),
 		mustCreateAssetFromTemplate(AssetPathKubeDNSSvc, internal.DNSSvcTemplate, noData),
+		mustCreateAssetFromTemplate(AssetPathEtcdSvc, internal.EtcdSvcTemplate, noData),
 	}
 	if selfHostKubelet {
 		assets = append(assets, mustCreateAssetFromTemplate(AssetPathKubelet, internal.KubeletTemplate, noData))
