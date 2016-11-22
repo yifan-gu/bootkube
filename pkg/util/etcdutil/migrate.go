@@ -145,9 +145,10 @@ func checkEtcdClusterUp() error {
 	//   can talk to the etcd cluster, we are certain there are 2 members at the beginning,
 	//   and will reduce to 1 eventually. That's the timeline of expected events.
 	//   As long as 1 member cluster is reached, we are certain cluster has been migrated successfully.
-	err := wait.PollImmediate(10*time.Second, 60*time.Second, func() (bool, error) {
+	endpoint := fmt.Sprintf("http://%s:2379", etcdServiceIP)
+	err := wait.PollImmediate(10*time.Second, 5*time.Minute, func() (bool, error) {
 		cfg := clientv3.Config{
-			Endpoints:   []string{fmt.Sprintf("http://%s:2379", etcdServiceIP)},
+			Endpoints:   []string{endpoint},
 			DialTimeout: 5 * time.Second,
 		}
 		etcdcli, err := clientv3.New(cfg)
@@ -169,5 +170,8 @@ func checkEtcdClusterUp() error {
 		glog.Infof("etcd cluster is up. Member: %v", m.Members[0].Name)
 		return true, nil
 	})
-	return err
+	if err != nil {
+		return fmt.Errorf("error waiting for self-hosted etcd cluster at %s: %v", endpoint, err)
+	}
+	return nil
 }

@@ -3,7 +3,7 @@
 coreos:
   flannel:
     interface: $public_ipv4
-    etcd_endpoints: http://172.17.4.51:2379
+    etcd_endpoints: http://10.3.0.15:2379,http://172.17.4.101:12379
   units:
     - name: flanneld.service
       command: start
@@ -11,14 +11,13 @@ coreos:
       - name: 50-network-config.conf
         content: |
           [Service]
-          ExecStartPre=/usr/bin/etcdctl --endpoint=http://172.17.4.51:2379 set /coreos.com/network/config '{ "Network": "10.2.0.0/16" }'
+          ExecStartPre=/usr/bin/etcdctl --endpoint=http://10.3.0.15:2379,http://172.17.4.101:12379 set /coreos.com/network/config '{ "Network": "10.2.0.0/16" }'
     - name: docker.service
       drop-ins:
-      - name: 50-flannel.conf
+      - name: 60-rem-flannel-config.conf
         content: |
-          [Unit]
-          Requires=flanneld.service
-          After=flanneld.service
+          [Service]
+          EnvironmentFile=
     - name: kubelet.service
       enable: true
       command: start
@@ -27,12 +26,16 @@ coreos:
         EnvironmentFile=/etc/environment
         Environment=KUBELET_ACI=quay.io/coreos/hyperkube
         Environment=KUBELET_VERSION=v1.4.6_coreos.0
+        Environment="RKT_OPTS=--volume run,kind=host,source=/run --mount volume=run,target=/run"
         ExecStartPre=/bin/mkdir -p /etc/kubernetes/manifests
         ExecStartPre=/bin/mkdir -p /srv/kubernetes/manifests
+        ExecStartPre=/bin/mkdir -p /etc/kubernetes/cni/net.d
         ExecStartPre=/bin/mkdir -p /etc/kubernetes/checkpoint-secrets
         ExecStart=/usr/lib/coreos/kubelet-wrapper \
           --kubeconfig=/etc/kubernetes/kubeconfig \
           --require-kubeconfig \
+          --cni-conf-dir=/etc/kubernetes/cni/net.d \
+          --network-plugin=cni \
           --lock-file=/var/run/lock/kubelet.lock \
           --exit-on-lock-contention \
           --pod-manifest-path=/etc/kubernetes/manifests \
@@ -48,6 +51,17 @@ coreos:
         WantedBy=multi-user.target
 
 write_files:
+  - path: "etc/kubernetes/cni/net.d/10-flannel.conf"
+    permissions: "0644"
+    owner: core
+    content: |
+        {
+          "name": "cbr0",
+          "type": "flannel",
+          "delegate": {
+            "isDefaultGateway": true
+          }
+        }
   - path: "/etc/kubernetes/kubeconfig"
     permissions: "0644"
     owner: core

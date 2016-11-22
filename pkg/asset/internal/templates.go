@@ -143,6 +143,7 @@ spec:
         - --service-account-key-file=/etc/kubernetes/secrets/service-account.pub
         - --client-ca-file=/etc/kubernetes/secrets/ca.crt
         - --cloud-provider={{ .CloudProvider  }}
+        - --etcd-quorum-read=true
         env:
           - name: MY_POD_IP
             valueFrom:

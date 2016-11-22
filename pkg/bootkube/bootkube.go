@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	assetTimeout    = 10 * time.Minute
+	assetTimeout    = 20 * time.Minute
 	insecureAPIAddr = "http://127.0.0.1:8080"
 )
 
@@ -90,6 +90,7 @@ func makeAPIServerFlags(config Config) []string {
 		"--service-account-key-file=" + filepath.Join(config.AssetDir, asset.AssetPathServiceAccountPubKey),
 		"--admission-control=NamespaceLifecycle,ServiceAccount",
 		"--runtime-config=api/all=true",
+		"--etcd-quorum-read=true",
 	}
 	if config.SelfHostedEtcd {
 		res = append(res, "--storage-backend=etcd3")
